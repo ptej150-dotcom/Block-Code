@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maruti Component Block Code Lookup Portal</title>
+    
+    <style>
+        /* --- 1. Global Reset and Variables --- */
+        :root {
+            --primary-color: #f72c2c; /* Maruti Suzuki Red */
+            --secondary-color: #2c2c2c; /* Dark/Black for contrast */
+            --background-color: #121212; /* Darker background */
+            --card-bg: rgba(255, 255, 255, 0.1);
+            --border-radius: 12px;
+            --font-stack: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-stack);
+            color: #f0f0f0;
+            line-height: 1.6;
+            min-height: 100vh;
+            background-color: var(--background-color); 
+            overflow: hidden; 
+        }
+
+        /* --- BLOCK CODE SEARCH PORTAL INTERFACE --- */
+        .block-code-portal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            /* Ensures it covers the entire screen and is dark */
+            background-color: rgba(0, 0, 0, 0.98); 
+            z-index: 1000;
+            display: flex; /* Ensures the content is centered and visible */
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            backdrop-filter: blur(20px); 
+        }
+
+        .portal-content {
+            background-color: rgba(30, 30, 30, 0.95); 
+            border-radius: 15px;
+            padding: 30px;
+            width: 90%;
+            max-width: 1200px;
+            max-height: 95%;
+            overflow-y: auto; /* The element that provides the scrollbar */
+            box-shadow: 0 0 50px rgba(247, 44, 44, 0.5);
+            border: 1px solid var(--primary-color);
+        }
+
+        .portal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+            
+            /* FIX 1: Sticky Header at top of scrolling container */
+            position: sticky; 
+            top: 0;
+            background-color: rgba(30, 30, 30, 0.95); 
+            z-index: 1010;
+        }
+
+        .portal-header h2 {
+            color: white; 
+        }
+
+        .close-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background-color: #d11a1a;
+            transform: rotate(90deg) scale(1.1);
+        }
+
+        #search-input {
+            width: 100%;
+            padding: 12px 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--primary-color);
+            background-color: #333;
+            color: white; 
+            font-size: 1rem;
+            
+            /* FIX 2: Sticky Search Input, positioned immediately after header */
+            position: sticky;
+            top: 66px; 
+            z-index: 1009;
+        }
+
+        #block-code-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        #block-code-table th, #block-code-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            color: #f0f0f0; 
+        }
+
+        #block-code-table th {
+            background-color: rgba(247, 44, 44, 0.2);
+            color: var(--primary-color);
+            text-transform: uppercase;
+            font-weight: 700;
+            
+            /* FIX 3: Sticky Table Headers, positioned immediately after search input */
+            top: 130px; 
+            position: sticky;
+            z-index: 1005;
+        }
+
+        #block-code-table tbody tr:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="block-code-portal" id="block-code-portal">
+        <div class="portal-content">
+            <div class="portal-header">
+                <h2>Maruti Component Block Code Lookup</h2>
+                <button class="close-btn" id="close-portal-btn" onclick="window.close()" title="Close Window">&times;</button>
+            </div>
+            
+            <input type="text" id="search-input" placeholder="Search by Code (CA...), Name, or Category..." autofocus>
+
+            <table id="block-code-table">
+                <thead>
+                    <tr>
+                        <th>Category</th>
+                        <th>Code</th>
+                        <th>Description/Name</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body">
+                    </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA SECTION ---
+        const BLOCK_CODES = [
+            // --- Transmission ---
+            { category: "Transmission", code: "CC000", name: "ASSY DWG (T/M)" },
+            { category: "Transmission", code: "CC005", name: "AT ASSY" },
+            { category: "Transmission", code: "CC040", name: "CLUTCH" },
+            { category: "Transmission", code: "CC050", name: "DRIVE PLATE" },
+            { category: "Transmission", code: "CC060", name: "TORQUE CONVERTER" },
+            { category: "Transmission", code: "CC070", name: "OIL PUMP" },
+            { category: "Transmission", code: "CC120", name: "CLUTCH RELEASE" },
+            { category: "Transmission", code: "CC160", name: "CLUTCH CABLE" },
+            { category: "Transmission", code: "CC200", name: "INPUT SHAFT" },
+            { category: "Transmission", code: "CC220", name: "PLANETARY GEAR" },
+            { category: "Transmission", code: "CC230", name: "COUNTERSHAFT" },
+            { category: "Transmission", code: "CC240", name: "SYNCHRO-MESH" },
+            { category: "Transmission", code: "CC250", name: "REVERSE GEAR" },
+            { category: "Transmission", code: "CC260", name: "FORWARD CLUTCH" },
+            { category: "Transmission", code: "CC262", name: "2ND CLUTCH & BRAKE" },
+            { category: "Transmission", code: "CC264", name: "REV CLUTCH & BRAKE" },
+            { category: "Transmission", code: "CC266", name: "OTHER CLUTCH & BRAKE" },
+            { category: "Transmission", code: "CC300", name: "TRANS CASE" },
+            { category: "Transmission", code: "CC320", name: "SPEEDOMETER GEAR" },
+            { category: "Transmission", code: "CC390", name: "VALVE & STRAINER" },
+            { category: "Transmission", code: "CC400", name: "GR SHIFT FORK/SHAFT" },
+            { category: "Transmission", code: "CC420", name: "SHF LKGE & PARK LOCK" },
+            { category: "Transmission", code: "CC430", name: "OIL COOLER & PIPING" },
+            { category: "Transmission", code: "CC450", name: "GR SHIFT LEVER/CASE" },
+            { category: "Transmission", code: "CC480", name: "GR SHIFT CONTROL" },
+            { category: "Transmission", code: "CC610", name: "DIFFERENTIAL (1)" },
+
+            // --- Body Electrical ---
+            { category: "Body Electrical", code: "CE000", name: "ASSY DWG (BODY ELEC)" },
+            { category: "Body Electrical", code: "CE001", name: "ASSY DWG (HARNESS)" },
+            { category: "Body Electrical", code: "CE010", name: "METER (SPEED; TACH)" },
+            { category: "Body Electrical", code: "CE015", name: "METER CABLE" },
+            { category: "Body Electrical", code: "CE100", name: "HEADLAMP" },
+            { category: "Body Electrical", code: "CE110", name: "SUPPLEMENTARY LAMP" },
+            { category: "Body Electrical", code: "CE140", name: "REAR TURN SIG LAMP" },
+            { category: "Body Electrical", code: "CE150", name: "TAIL & STOP LAMP" },
+            { category: "Body Electrical", code: "CE160", name: "LICENSE LAMP" },
+            { category: "Body Electrical", code: "CE180", name: "SIDE TURN SIG L & RR" },
+            { category: "Body Electrical", code: "CE310", name: "BATTERY CABLE" },
+            { category: "Body Electrical", code: "CE321", name: "WIRING HARNESS" },
+            { category: "Body Electrical", code: "CE322", name: "WIRING HARNESS" },
+            { category: "Body Electrical", code: "CE323", name: "WIRING HARNESS" },
+            { category: "Body Electrical", code: "CE325", name: "WIRING HARNESS" },
+            { category: "Body Electrical", code: "CE328", name: "WIRING HARNESS" },
+            { category: "Body Electrical", code: "CE330", name: "LEAD WIRE" },
+            { category: "Body Electrical", code: "CE331", name: "LEAD WIRE" },
+            { category: "Body Electrical", code: "CE340", name: "FUSE" },
+            { category: "Body Electrical", code: "CE400", name: "IGNITION SWITCH" },
+            { category: "Body Electrical", code: "CE410", name: "LIGHTING SWITCH" },
+            { category: "Body Electrical", code: "CE420", name: "SUPPL LAMP SW" },
+            { category: "Body Electrical", code: "CE440", name: "WIPER SWITCH" },
+            { category: "Body Electrical", code: "CE450", name: "TURN SIG & DMR SW" },
+            { category: "Body Electrical", code: "CE460", name: "HAZARD WARNING SW" },
+            { category: "Body Electrical", code: "CE470", name: "BACKUP. STOP LAMP SW" },
+            { category: "Body Electrical", code: "CE490", name: "DOOR SWITCH" },
+            { category: "Body Electrical", code: "CE540", name: "POWER WINDOW SWITCH" },
+            { category: "Body Electrical", code: "CE580", name: "WIPER MOTOR & LINK" },
+            { category: "Body Electrical", code: "CE590", name: "WIPER BLADE" },
+            { category: "Body Electrical", code: "CE600", name: "WASHER TANK & PUMP" },
+            { category: "Body Electrical", code: "CE610", name: "REAR WIPER MOTOR.BLADE" },
+            { category: "Body Electrical", code: "CE620", name: "REAR WASHER TANK. PUMP" },
+            { category: "Body Electrical", code: "CE630", name: "HORN" },
+            { category: "Body Electrical", code: "CE650", name: "TURN. HAZARD SIG RLY" },
+            { category: "Body Electrical", code: "CE670", name: "HEADLAMP CLEANER" },
+            { category: "Body Electrical", code: "CE680", name: "SYSTEM COMPONENT" },
+            { category: "Body Electrical", code: "CE690", name: "CONTROL DEVICE" },
+            { category: "Body Electrical", code: "CE700", name: "AUDIO & NAVI" },
+            { category: "Body Electrical", code: "CE701", name: "ANTENNA" },
+            { category: "Body Electrical", code: "CE702", name: "SPEAKER" },
+            { category: "Body Electrical", code: "CE705", name: "NOISE SUPPRESSOR" },
+            { category: "Body Electrical", code: "CE720", name: "CIGAR LIGHTER" },
+
+            // --- Suspension ---
+            { category: "Suspension", code: "CG000", name: "ASSY DWG (SUSPENSION)" },
+            { category: "Suspension", code: "CG030", name: "AXLE.. KNUCKLE/FS" },
+            { category: "Suspension", code: "CG031", name: "STRUT/FS" },
+            { category: "Suspension", code: "CG032", name: "STRUT SUPPORT/FS" },
+            { category: "Suspension", code: "CG033", name: "SPRING & STOPPER/FS" },
+            { category: "Suspension", code: "CG034", name: "SPRING HOLDER/FS" },
+            { category: "Suspension", code: "CG035", name: "SUSPN ARM/FS" },
+            { category: "Suspension", code: "CG036", name: "STABILIZER/FS" },
+            { category: "Suspension", code: "CG140", name: "FRONT AXLE SHAFT" },
+            { category: "Suspension", code: "CG150", name: "FRONT WHEEL HUB" },
+            { category: "Suspension", code: "CG180", name: "FRONT SUSPN FRAME" },
+            { category: "Suspension", code: "CG201", name: "AXLE HSG.　BEAM AXLE" },
+            { category: "Suspension", code: "CG202", name: "CONT LINK. ARM/RR" },
+            { category: "Suspension", code: "CG203", name: "SPRING & STOPPER/RR" },
+            { category: "Suspension", code: "CG204", name: "SPRING HOLDER/RR" },
+            { category: "Suspension", code: "CG205", name: "SHOCK ABSORBER/RR" },
+            { category: "Suspension", code: "CG350", name: "REAR WHEEL HUB" },
+            { category: "Suspension", code: "CG400", name: "TIRE & WHEEL" },
+            { category: "Suspension", code: "CG405", name: "WHEEL NUT" },
+            { category: "Suspension", code: "CG410", name: "WHEEL BALANCER" },
+            { category: "Suspension", code: "CG420", name: "WHEEL CAP" },
+            { category: "Suspension", code: "CG500", name: "STRG WHL. HORN BUTTON" },
+            { category: "Suspension", code: "CG510", name: "STRG SHAFT. JOINT" },
+            { category: "Suspension", code: "CG520", name: "STRG COLUMN & COVER" },
+            { category: "Suspension", code: "CG600", name: "STRG GEAR. HOUSING" },
+            { category: "Suspension", code: "CG660", name: "TIE ROD" },
+            { category: "Suspension", code: "CG700", name: "ACCEL PEDAL" },
+            { category: "Suspension", code: "CG705", name: "BRAKE & CLUTCH PEDAL" },
+            { category: "Suspension", code: "CG920", name: "LABEL & PLATE (SPNSN)" },
+
+            // --- White Body ---
+            { category: "White Body", code: "CJ000", name: "ASSY DWG(WHITE BODY)" },
+            { category: "White Body", code: "CJ020", name: "FRONT HOOD" },
+            { category: "White Body", code: "CJ030", name: "FRONT HOOD HINGE" },
+            { category: "White Body", code: "CJ040", name: "FRONT FENDER" },
+            { category: "White Body", code: "CJ050", name: "RDTR SPRT, FR X MBR" },
+            { category: "White Body", code: "CJ100", name: "FENDER APRON COWL R" },
+            { category: "White Body", code: "CJ110", name: "FENDER APRON COWL L" },
+            { category: "White Body", code: "CJ120", name: "FRAME FR UNDER BODY R" },
+            { category: "White Body", code: "CJ130", name: "FRAME FR UNDER BODY L" },
+            { category: "White Body", code: "CJ200", name: "DASH PANEL" },
+            { category: "White Body", code: "CJ240", name: "WINDSHIELD PANEL" },
+            { category: "White Body", code: "CJ300", name: "FRONT FLOOR" },
+            { category: "White Body", code: "CJ320", name: "REAR FLOOR" },
+            { category: "White Body", code: "CJ350", name: "REAR WHEEL HOUSE" },
+            { category: "White Body", code: "CJ400", name: "SIDE MBR(REAR FL R)" },
+            { category: "White Body", code: "CJ410", name: "SIDE MBR(REAR FL L)" },
+            { category: "White Body", code: "CJ450", name: "X MBR REAR FLOOR" },
+            { category: "White Body", code: "CJ500", name: "SIDE BODY(INNER R)" },
+            { category: "White Body", code: "CJ510", name: "SIDE BODY(INNER L)" },
+            { category: "White Body", code: "CJ550", name: "SIDE BODY, FR OUTER R" },
+            { category: "White Body", code: "CJ570", name: "SIDE BODY, FR OUTER L" },
+            { category: "White Body", code: "CJ600", name: "ROOF" },
+            { category: "White Body", code: "CJ620", name: "BACK PANEL RR SKIRT" },
+            { category: "White Body", code: "CJ700", name: "FRONT DOOR PANEL R" },
+            { category: "White Body", code: "CJ710", name: "FRONT DOOR PANEL L" },
+            { category: "White Body", code: "CJ720", name: "REAR DOOR, PANEL R" },
+            { category: "White Body", code: "CJ730", name: "REAR DOOR PANEL L" },
+            { category: "White Body", code: "CJ740", name: "BACK DOOR PANEL" },
+            { category: "White Body", code: "CJ750", name: "DOOR HINGE" },
+
+            // --- Equipment ---
+            { category: "Equipment", code: "CS000", name: "ASSY DWG (EQUIPMENT)" },
+            { category: "Equipment", code: "CS030", name: "FRONT BUMPER" },
+            { category: "Equipment", code: "CS040", name: "REAR BUMPER" },
+            { category: "Equipment", code: "CS070", name: "FRONT BODY EQUIPMENT" },
+            { category: "Equipment", code: "CS080", name: "ELEC PARTS EQUIPMENT" },
+            { category: "Equipment", code: "CS100", name: "INST PNL MAIN" },
+            { category: "Equipment", code: "CS110", name: "MTR PANEL. FTG PANEL" },
+            { category: "Equipment", code: "CS115", name: "GLOVE BOX" },
+            { category: "Equipment", code: "CS140", name: "INST PNL EQUIPMENT" },
+            { category: "Equipment", code: "CS145", name: "AIR BAG" },
+            { category: "Equipment", code: "CS200", name: "FLOOR MAT & CARPET" },
+            { category: "Equipment", code: "CS201", name: "FLOOR MAT & CARPET" },
+            { category: "Equipment", code: "CS210", name: "SILENCER PAD" },
+            { category: "Equipment", code: "CS230", name: "UNDERBODY EQUIPMENT" },
+            { category: "Equipment", code: "CS231", name: "UNDERBODY EQUIPMENT" },
+            { category: "Equipment", code: "CS260", name: "CONSOLE BOX" },
+            { category: "Equipment", code: "CS270", name: "INSIDE CABIN TRIM" },
+            { category: "Equipment", code: "CS280", name: "INSIDE BODY EQUIPMENT" },
+            { category: "Equipment", code: "CS281", name: "IN/BODY EQUIPMENT (OPENER)" },
+            { category: "Equipment", code: "CS282", name: "IN/BODY EQUIPMENT A/B" },
+            { category: "Equipment", code: "CS310", name: "OUTSIDE BODY EQUIPMENT" },
+            { category: "Equipment", code: "CS320", name: "VENTILATOR GARNISH" },
+            { category: "Equipment", code: "CS340", name: "EMBLEM" },
+            { category: "Equipment", code: "CS350", name: "ROOF EQUIPMENT" },
+            { category: "Equipment", code: "CS470", name: "DOOR SASH" },
+            { category: "Equipment", code: "CS480", name: "DOOR OPEN STOP (F,R)" },
+            { category: "Equipment", code: "CS485", name: "DOOR SATY & STOP (BACK)" },
+            { category: "Equipment", code: "CS500", name: "HOOD LATCH FITTING" },
+            { category: "Equipment", code: "CS510", name: "DOOR LATCH (FRONT)" },
+            { category: "Equipment", code: "CS520", name: "DOOR LATCH (REAR)" },
+            { category: "Equipment", code: "CS530", name: "DOOR LATCH (BACK)" },
+            { category: "Equipment", code: "CS550", name: "DOOR STRIKER (FR, RR)" },
+            { category: "Equipment", code: "CS555", name: "DOOR STRIKER (BACK)" },
+            { category: "Equipment", code: "CS570", name: "DOOR HANDLE (FR, RR)" },
+            { category: "Equipment", code: "CS580", name: "DOOR REMOTE CONTROL" },
+            { category: "Equipment", code: "CS590", name: "WINDOW REGULATOR" },
+            { category: "Equipment", code: "CS600", name: "BOTTOM CHAN RBR RUN" },
+            { category: "Equipment", code: "CS610", name: "DOOR TRIM (FR, RR)" },
+            { category: "Equipment", code: "CS615", name: "DOOR TRIM (BACK)" },
+            { category: "Equipment", code: "CS620", name: "DOOR SCALP" },
+            { category: "Equipment", code: "CS630", name: "DOOR EQPT (FR,RR)" },
+            { category: "Equipment", code: "CS635", name: "DOOR EQPT (BACK DOOR)" },
+            { category: "Equipment", code: "CS650", name: "DOOR GRIP & ARMREST" },
+            { category: "Equipment", code: "CS660", name: "GLASS (FR, RR, DOOR)" },
+            { category: "Equipment", code: "CS661", name: "GLASS (BACK DOOR)" },
+            { category: "Equipment", code: "CS665", name: "GLASS (BODY)" },
+            { category: "Equipment", code: "CS670", name: "WEATHERSTRIP (FR,RR)" },
+            { category: "Equipment", code: "CS671", name: "WEATHERSTRIP (BACK)" },
+            { category: "Equipment", code: "CS680", name: "MIRROR" },
+            { category: "Equipment", code: "CS690", name: "SUNVISOR" },
+            { category: "Equipment", code: "CS700", name: "FRONT SEAT BELT,R" },
+            { category: "Equipment", code: "CS703", name: "REAR SEAT BELT" },
+            { category: "Equipment", code: "CS710", name: "FRONT SEAT, R" },
+            { category: "Equipment", code: "CS715", name: "FRONT SEAT, L" },
+            { category: "Equipment", code: "CS740", name: "FEONT SEAT MTG, R" },
+            { category: "Equipment", code: "CS750", name: "FEONT SEAT MTG, L" },
+            { category: "Equipment", code: "CS760", name: "REAR SEAR ,R" },
+            { category: "Equipment", code: "CS770", name: "REAR SEAT MTG, R" },
+            { category: "Equipment", code: "CS820", name: "REAR LUGGAGE" },
+            { category: "Equipment", code: "CS830", name: "" }, 
+            { category: "Equipment", code: "CS835", name: "FUEL FLR SYSTEM" },
+            { category: "Equipment", code: "CS840", name: "FUEL EVAP SYSTEM" },
+            { category: "Equipment", code: "CS860", name: "ASHTRAY" },
+            { category: "Equipment", code: "CS900", name: "JACK & TOOL" },
+            { category: "Equipment", code: "CS920", name: "LABEL & PLATE (1)" },
+            { category: "Equipment", code: "CS921", name: "LABEL & PLATE (2)" },
+
+            // --- Engine Electrical ---
+            { category: "Engine Electrical", code: "CD000", name: "ASSY DWG (ENG ELECT)" },
+            { category: "Engine Electrical", code: "CD010", name: "STARTER MOTOR" },
+            { category: "Engine Electrical", code: "CD020", name: "GENERATOR" },
+            { category: "Engine Electrical", code: "CD300", name: "DISTRIBUTOR AND BRAKE" },
+            { category: "Engine Electrical", code: "CD310", name: "IGNITION COIL" },
+            { category: "Engine Electrical", code: "CD400", name: "BATTERY" },
+            { category: "Engine Electrical", code: "CD601", name: "CONTROLLER ACCESSORY" },
+            { category: "Engine Electrical", code: "CD605", name: "EPI CONT(IN ENG ROOM)" },
+            { category: "Engine Electrical", code: "CD640", name: "ENG. CONT. RELAY" },
+            { category: "Engine Electrical", code: "CD700", name: "AT CONTROLLER" },
+            { category: "Engine Electrical", code: "CD720", name: "ABS CONTROLLER" },
+            { category: "Engine Electrical", code: "CD730", name: "P/S CONTROLLER" },
+            { category: "Engine Electrical", code: "CD750", name: "AIRBAG CONTROLLER" },
+            { category: "Engine Electrical", code: "CD800", name: "OIL SENSE DEVICE" },
+            { category: "Engine Electrical", code: "CD801", name: "BACKUP LAMP SWITCH" },
+
+            // --- Brake ---
+            { category: "Brake", code: "CH000", name: "ASSY DWG(BRAKE)" },
+            { category: "Brake", code: "CH020", name: "BRAKE MASTER CYL" },
+            { category: "Brake", code: "CH050", name: "BRAKE VACUUM LINE" },
+            { category: "Brake", code: "CH100", name: "BRAKE PIPE" },
+            { category: "Brake", code: "CH110", name: "BRAKE HOSE" },
+            { category: "Brake", code: "CH120", name: "BRAKE JOINT" },
+            { category: "Brake", code: "CH130", name: "BRAKE VALVE" },
+            { category: "Brake", code: "CH210", name: "FRONT DISC BRAKE" },
+            { category: "Brake", code: "CH220", name: "FRONT DISC PLATE" },
+            { category: "Brake", code: "CH250", name: "REAR DRUM BRAKE" },
+            { category: "Brake", code: "CH255", name: "REAR BRAKE DRUM" },
+            { category: "Brake", code: "CH400", name: "PARKING BRAKE LEVER" },
+            { category: "Brake", code: "CH420", name: "PARKING BRAKE CABLE" },
+            { category: "Brake", code: "CH550", name: "ANTI SKID" },
+
+            // --- Airconditioner ---
+            { category: "Airconditioner", code: "CR000", name: "ASSY DWG(CAR AIRCON)" },
+            { category: "Airconditioner", code: "CR010", name: "VENT AND DEFROSTER NOZ" },
+            { category: "Airconditioner", code: "CR020", name: "HEATER" },
+            { category: "Airconditioner", code: "CR050", name: "HTR REMOTE CONTROL" },
+            { category: "Airconditioner", code: "CR060", name: "HEATER DUCT" },
+            { category: "Airconditioner", code: "CR110", name: "ENGINE FITTING" },
+            { category: "Airconditioner", code: "CR120", name: "COMPRESSOR" },
+            { category: "Airconditioner", code: "CR130", name: "CONDENSER" },
+            { category: "Airconditioner", code: "CR150", name: "ELECTRIC PARTS" },
+            { category: "Airconditioner", code: "CR170", name: "PIPING PARTS" },
+            { category: "Airconditioner", code: "CR180", name: "INSULATOR PARTS" },
+        ];
+        // --- END DATA SECTION ---
+
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const searchInput = document.getElementById('search-input');
+            const tableBody = document.getElementById('table-body');
+
+            // Function to render the table rows
+            function renderTable(data) {
+                tableBody.innerHTML = '';
+                if (data.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="3" style="text-align:center;">No matching codes found.</td></tr>';
+                    return;
+                }
+                data.forEach(item => {
+                    const row = tableBody.insertRow();
+                    row.insertCell().textContent = item.category;
+                    row.insertCell().textContent = item.code;
+                    row.insertCell().textContent = item.name;
+                });
+            }
+
+            // Function to handle search/filter
+            function filterCodes() {
+                const searchTerm = searchInput.value.toLowerCase();
+                const filteredData = BLOCK_CODES.filter(item => { 
+                    return (
+                        item.code.toLowerCase().includes(searchTerm) ||
+                        item.name.toLowerCase().includes(searchTerm) ||
+                        item.category.toLowerCase().includes(searchTerm)
+                    );
+                });
+                renderTable(filteredData);
+            }
+            
+            // Event Listener for Search
+            searchInput.addEventListener('input', filterCodes);
+            
+            // Initial load of all data
+            renderTable(BLOCK_CODES);
+            searchInput.focus(); // Focus on search box immediately
+        });
+    </script>
+</body>
+</html>
